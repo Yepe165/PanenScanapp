@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panen Scan — Panduan Training Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#132118; --surface:#1c3225; --surface-2:#22392a;
+    --line: rgba(243,239,227,0.14); --text:#f3efe3; --muted:#9fb3a0;
+    --ripe:#e8542a; --half:#e8b72a; --unripe:#5aa85a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(232,84,42,0.08), transparent),
+      var(--bg);
+    color:var(--text); font-family:Inter, sans-serif; line-height:1.65;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 90px;}
+  .eyebrow{font-family:"JetBrains Mono", monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  h1{font-family:Fraunces, serif;font-weight:700;font-size:clamp(28px,4vw,40px);margin:0 0 6px;}
+  .spectrum{height:10px;border-radius:999px;background:linear-gradient(90deg, var(--unripe), var(--half), var(--ripe));margin:18px 0 36px;}
+  h2{font-family:Fraunces, serif;font-weight:600;font-size:21px;margin-top:38px;border-top:1px solid var(--line);padding-top:24px;}
+  h2:first-of-type{border-top:none;padding-top:0;margin-top:28px;}
+  p, li{color:var(--text);font-size:15px;}
+  ul, ol{padding-left:22px;}
+  code{
+    font-family:"JetBrains Mono", monospace; background:var(--surface-2);
+    padding:2px 6px; border-radius:5px; font-size:13px; color:var(--half);
+  }
+  pre{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:16px; overflow-x:auto;
+  }
+  pre code{background:none;padding:0;color:var(--text);}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;}
+  th, td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;}
+  a{color:var(--half);}
+  .badge-row{display:flex;gap:10px;margin-bottom:30px;flex-wrap:wrap;}
+  .badge{font-family:"JetBrains Mono",monospace;font-size:11.5px;background:var(--surface-2);border:1px solid var(--line);padding:5px 10px;border-radius:999px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Panen Scan · Dokumentasi Training</div>
+  <h1>Panduan Training Model</h1>
+  <div class="spectrum"></div>
+  <div class="badge-row">
+    <span class="badge">YOLOv8</span>
+    <span class="badge">Estimasi Berat</span>
+    <span class="badge">Deploy TFLite</span>
+  </div>
+<h1>Panen Scan — Panduan Training Model</h1>
+<p>Langkah dari nol sampai model siap dipakai di aplikasi.</p>
+<h2>Langkah 1 — Kumpulkan foto</h2>
+<ul>
+<li>Kelapa sawit: 800–1500 foto, variasi cahaya &amp; jarak</li>
+<li>Buah/sayur lain: 500–1000 foto per jenis</li>
+<li>Sertakan variasi: latar polos &amp; latar asli kebun, buah tunggal &amp; bergerombol</li>
+</ul>
+<h2>Langkah 2 — Anotasi (beri label)</h2>
+<p>Gunakan <a href="https://roboflow.com">Roboflow</a> (gratis untuk skala kecil) atau <a href="https://cvat.ai">CVAT</a>:
+1. Upload semua foto
+2. Gambar kotak (bounding box) di tiap buah
+3. Beri label kelas: <code>matang</code>, <code>mengkal</code>, atau <code>mentah</code>
+4. Export dalam format <strong>YOLOv8</strong> — hasil export otomatis punya struktur folder
+   <code>images/</code> dan <code>labels/</code> yang cocok dengan <code>dataset.yaml</code></p>
+<h2>Langkah 3 — Latih model deteksi</h2>
+<pre><code class="language-bash">pip install ultralytics --break-system-packages
+python train_detector.py
+</code></pre>
+<p>Model belajar mendeteksi lokasi tiap buah sekaligus kelas kematangannya.
+Jumlah buah dalam satu foto = jumlah bounding box yang terdeteksi.</p>
+<h2>Langkah 4 — Kumpulkan data berat (untuk model estimasi kg)</h2>
+<ul>
+<li>Foto tiap buah dengan jarak kamera konsisten, lalu timbang beratnya</li>
+<li>Susun ke <code>data_berat.csv</code> (lihat format di dalam <code>train_weight_model.py</code>)</li>
+</ul>
+<h2>Langkah 5 — Latih model estimasi berat</h2>
+<pre><code class="language-bash">pip install scikit-learn pandas joblib --break-system-packages
+python train_weight_model.py
+</code></pre>
+<h2>Langkah 6 — Deploy ke aplikasi mobile</h2>
+<ul>
+<li><code>train_detector.py</code> sudah otomatis export ke <code>.tflite</code> (ringan, jalan di Android/iOS)</li>
+<li>Untuk model berat (<code>model_berat.joblib</code>), convert ke ONNX atau tulis ulang
+  rumusnya sebagai fungsi sederhana di app (karena modelnya kecil)</li>
+<li>Alur di aplikasi: foto → model deteksi (hitung jumlah + kematangan per buah)
+  → tiap bounding box dikirim ke model berat → jumlahkan semua estimasi berat</li>
+</ul>
+<h2>Target akurasi yang realistis</h2>
+<ul>
+<li>Deteksi &amp; klasifikasi kematangan: mAP50 &gt; 0.85 sudah cukup baik untuk mulai uji lapangan</li>
+<li>Estimasi berat: e   rror &lt; 10-15% dari berat asli biasanya cukup untuk kebutuhan
+  perkiraan hasil panen (bukan untuk transaksi jual-beli presisi)</li>
+</ul>
+<h2>Catatan penting</h2>
+<p>Estimasi berat dari foto 2D punya batas akurasi karena kamera tidak tahu jarak
+sebenarnya kecuali dikalibrasi. Untuk hasil lebih akurat, pertimbangkan kamera
+depth (LiDAR di HP tertentu) atau selalu sertakan objek referensi ukuran tetap
+di setiap foto.</p>
+</div>
+</body>
+</html>

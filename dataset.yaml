@@ -1,0 +1,25 @@
+# Konfigurasi dataset untuk YOLOv8 (Ultralytics)
+# Struktur folder yang diharapkan:
+#
+# dataset/
+#   images/
+#     train/   -> foto training (.jpg/.png)
+#     val/     -> foto validasi
+#   labels/
+#     train/   -> file .txt anotasi YOLO (satu per gambar, nama sama)
+#     val/
+#
+# Format tiap baris di file label .txt:
+#   <class_id> <x_center> <y_center> <width> <height>   (semua dinormalisasi 0-1)
+# Contoh: 0 0.512 0.433 0.120 0.150
+
+path: ./dataset        # root folder dataset (ubah sesuai lokasi kamu)
+train: images/train
+val: images/val
+
+# Ganti/sesuaikan nama & jumlah kelas dengan komoditas yang dilatih.
+# Contoh di bawah untuk kelapa sawit (TBS) — 3 kelas kematangan.
+names:
+  0: matang
+  1: mengkal
+  2: mentah
